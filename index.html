@@ -7,85 +7,117 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
             background-color: #f4f4f4;
             padding: 20px;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            width: 300px;
         }
         select, button {
             padding: 10px;
-            margin: 10px;
+            margin: 5px;
             font-size: 16px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <h2>Выберите страну и город</h2>
-    <label for="country">Страна:</label>
-    <select id="country">
-        <option value="">Выберите страну</option>
-    </select>
 
-    <br>
-    <label for="city">Город:</label>
-    <select id="city">
-        <option value="">Выберите город</option>
-    </select>
+    <div class="container">
+        <h2>Выберите страну и город</h2>
+        <label for="country">Выберите страну:</label>
+        <select id="country">
+            <option value="">Загрузка...</option>
+        </select>
 
-    <br>
-    <button onclick="loadCities()">Загрузить города</button>
+        <br>
+
+        <label for="city">Выберите город:</label>
+        <select id="city">
+            <option value="">Выберите страну сначала</option>
+        </select>
+
+        <br>
+        <button onclick="getCityInfo()">Получить информацию</button>
+
+        <p id="info"></p>
+    </div>
 
     <script>
-        // CORS-прокси для обхода CORS-ограничений
-        const corsProxy = "https://cors-anywhere.herokuapp.com/";
+        const countriesUrl = 'http://api.travelpayouts.com/data/ru/countries.json';
+        const citiesUrl = 'http://api.travelpayouts.com/data/ru/cities.json';
 
-        // Загрузка стран с API
+        // Функция для загрузки стран
         async function loadCountries() {
-            let url = corsProxy + "http://api.travelpayouts.com/data/ru/countries.json";
             try {
-                let response = await fetch(url);
-                let countries = await response.json();
-                let countrySelect = document.getElementById("country");
+                const response = await fetch(countriesUrl);
+                const data = await response.json();
+                const countrySelect = document.getElementById("country");
+                countrySelect.innerHTML = "<option value=''>Выберите страну</option>"; // Очищаем старые данные
 
-                countries.forEach(country => {
-                    let option = document.createElement("option");
+                data.forEach(country => {
+                    const option = document.createElement("option");
                     option.value = country.code;
                     option.textContent = country.name;
                     countrySelect.appendChild(option);
                 });
             } catch (error) {
-                console.error('Ошибка при загрузке стран:', error);
+                console.error('Ошибка загрузки стран:', error);
             }
         }
 
-        // Загрузка городов с API
-        async function loadCities() {
-            let countryCode = document.getElementById("country").value;
-            if (!countryCode) {
-                alert("Сначала выберите страну");
-                return;
-            }
-
-            let url = corsProxy + `http://api.travelpayouts.com/data/ru/cities.json?country=${countryCode}`;
+        // Функция для загрузки городов по выбранной стране
+        async function loadCities(countryCode) {
             try {
-                let response = await fetch(url);
-                let cities = await response.json();
-                let citySelect = document.getElementById("city");
+                const response = await fetch(citiesUrl);
+                const data = await response.json();
+                const citySelect = document.getElementById("city");
+                citySelect.innerHTML = "<option value=''>Выберите город</option>"; // Очищаем старые данные
 
-                citySelect.innerHTML = '<option value="">Выберите город</option>'; // Очистка старых данных
-
-                cities.forEach(city => {
-                    let option = document.createElement("option");
+                data.filter(city => city.country_code === countryCode).forEach(city => {
+                    const option = document.createElement("option");
                     option.value = city.code;
                     option.textContent = city.name;
                     citySelect.appendChild(option);
                 });
             } catch (error) {
-                console.error('Ошибка при загрузке городов:', error);
+                console.error('Ошибка загрузки городов:', error);
             }
         }
 
-        // Загрузка стран при загрузке страницы
-        window.onload = loadCountries;
+        // Функция, которая запускается при изменении страны
+        document.getElementById("country").addEventListener("change", (event) => {
+            const countryCode = event.target.value;
+            if (countryCode) {
+                loadCities(countryCode);
+            } else {
+                document.getElementById("city").innerHTML = "<option value=''>Выберите страну сначала</option>";
+            }
+        });
+
+        // Функция для получения информации по выбранному городу
+        function getCityInfo() {
+            const city = document.getElementById("city").value;
+            const infoParagraph = document.getElementById("info");
+
+            if (city) {
+                infoParagraph.textContent = `Информация о городе с кодом: ${city}. Дополнительные данные можно получить через API!`;
+            } else {
+                infoParagraph.textContent = "Пожалуйста, выберите город.";
+            }
+        }
+
+        // Загружаем список стран при загрузке страницы
+        loadCountries();
     </script>
+
 </body>
 </html>
