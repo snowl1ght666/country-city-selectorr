@@ -52,13 +52,15 @@
     </div>
 
     <script>
+        // Прокси сервер для обхода CORS
+        const corsProxy = 'https://cors-anywhere.herokuapp.com/';
         const countriesUrl = 'http://api.travelpayouts.com/data/ru/countries.json';
         const citiesUrl = 'http://api.travelpayouts.com/data/ru/cities.json';
 
         // Функция для загрузки стран
         async function loadCountries() {
             try {
-                const response = await fetch(countriesUrl);
+                const response = await fetch(corsProxy + countriesUrl);
                 const data = await response.json();
                 const countrySelect = document.getElementById("country");
                 countrySelect.innerHTML = "<option value=''>Выберите страну</option>"; // Очищаем старые данные
@@ -77,7 +79,7 @@
         // Функция для загрузки городов по выбранной стране
         async function loadCities(countryCode) {
             try {
-                const response = await fetch(citiesUrl);
+                const response = await fetch(corsProxy + citiesUrl);
                 const data = await response.json();
                 const citySelect = document.getElementById("city");
                 citySelect.innerHTML = "<option value=''>Выберите город</option>"; // Очищаем старые данные
@@ -93,17 +95,7 @@
             }
         }
 
-        // Функция, которая запускается при изменении страны
-        document.getElementById("country").addEventListener("change", (event) => {
-            const countryCode = event.target.value;
-            if (countryCode) {
-                loadCities(countryCode);
-            } else {
-                document.getElementById("city").innerHTML = "<option value=''>Выберите страну сначала</option>";
-            }
-        });
-
-        // Функция для получения информации по выбранному городу
+        // Функция для вывода информации по выбранному городу
         function getCityInfo() {
             const city = document.getElementById("city").value;
             const infoParagraph = document.getElementById("info");
@@ -117,6 +109,16 @@
 
         // Загружаем список стран при загрузке страницы
         loadCountries();
+
+        // Обработчик для загрузки городов по выбранной стране
+        document.getElementById("country").addEventListener("change", (event) => {
+            const countryCode = event.target.value;
+            if (countryCode) {
+                loadCities(countryCode);
+            } else {
+                document.getElementById("city").innerHTML = "<option value=''>Выберите страну сначала</option>";
+            }
+        });
     </script>
 
 </body>
