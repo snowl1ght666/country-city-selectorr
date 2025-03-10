@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор страны и города</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        select, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Выберите страну и город</h2>
+    <label for="country">Страна:</label>
+    <select id="country">
+        <option value="">Выберите страну</option>
+    </select>
+
+    <br>
+    <label for="city">Город:</label>
+    <select id="city">
+        <option value="">Выберите город</option>
+    </select>
+
+    <br>
+    <button onclick="loadCities()">Загрузить города</button>
+
+    <script>
+        // CORS-прокси для обхода CORS-ограничений
+        const corsProxy = "https://cors-anywhere.herokuapp.com/";
+
+        // Загрузка стран с API
+        async function loadCountries() {
+            let url = corsProxy + "http://api.travelpayouts.com/data/ru/countries.json";
+            try {
+                let response = await fetch(url);
+                let countries = await response.json();
+                let countrySelect = document.getElementById("country");
+
+                countries.forEach(country => {
+                    let option = document.createElement("option");
+                    option.value = country.code;
+                    option.textContent = country.name;
+                    countrySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Ошибка при загрузке стран:', error);
+            }
+        }
+
+        // Загрузка городов с API
+        async function loadCities() {
+            let countryCode = document.getElementById("country").value;
+            if (!countryCode) {
+                alert("Сначала выберите страну");
+                return;
+            }
+
+            let url = corsProxy + `http://api.travelpayouts.com/data/ru/cities.json?country=${countryCode}`;
+            try {
+                let response = await fetch(url);
+                let cities = await response.json();
+                let citySelect = document.getElementById("city");
+
+                citySelect.innerHTML = '<option value="">Выберите город</option>'; // Очистка старых данных
+
+                cities.forEach(city => {
+                    let option = document.createElement("option");
+                    option.value = city.code;
+                    option.textContent = city.name;
+                    citySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Ошибка при загрузке городов:', error);
+            }
+        }
+
+        // Загрузка стран при загрузке страницы
+        window.onload = loadCountries;
+    </script>
+</body>
+</html>
