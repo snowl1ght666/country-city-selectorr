@@ -27,6 +27,10 @@
             border: 1px solid #ddd;
             border-radius: 5px;
         }
+        #loading {
+            color: #888;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -49,6 +53,7 @@
         <button onclick="getCityInfo()">Получить информацию</button>
 
         <p id="info"></p>
+        <p id="loading"></p>
     </div>
 
     <script>
@@ -59,6 +64,9 @@
 
         // Функция для загрузки стран
         async function loadCountries() {
+            const loadingMessage = document.getElementById('loading');
+            loadingMessage.innerText = 'Загружаем страны...';
+
             try {
                 const response = await fetch(corsProxy + countriesUrl);
                 const data = await response.json();
@@ -71,13 +79,19 @@
                     option.textContent = country.name;
                     countrySelect.appendChild(option);
                 });
+
+                loadingMessage.innerText = ''; // Скрываем сообщение о загрузке
             } catch (error) {
                 console.error('Ошибка загрузки стран:', error);
+                loadingMessage.innerText = 'Ошибка при загрузке стран. Попробуйте позже.';
             }
         }
 
         // Функция для загрузки городов по выбранной стране
         async function loadCities(countryCode) {
+            const loadingMessage = document.getElementById('loading');
+            loadingMessage.innerText = 'Загружаем города...';
+
             try {
                 const response = await fetch(corsProxy + citiesUrl);
                 const data = await response.json();
@@ -90,8 +104,11 @@
                     option.textContent = city.name;
                     citySelect.appendChild(option);
                 });
+
+                loadingMessage.innerText = ''; // Скрываем сообщение о загрузке
             } catch (error) {
                 console.error('Ошибка загрузки городов:', error);
+                loadingMessage.innerText = 'Ошибка при загрузке городов. Попробуйте позже.';
             }
         }
 
